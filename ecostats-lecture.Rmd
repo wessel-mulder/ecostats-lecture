@@ -1,33 +1,57 @@
 ---
-title: "buildingSDM"
-author: "WM"
+title: "Building a Species Distibution Model"
+author: "Wessel Mulder & Nathan Michielsen"
 date: "`r Sys.Date()`"
 output: html_document
 ---
+## Install and unpack necessary packages
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library('terra')
-library('sf')
+```{r, echo=TRUE, results="hide", message=FALSE}
+# install.packages("terra")
+# install.packages("sf")
+# install.packages("lme4")
+
+library(terra)  # Used for handling raster data (spatial information, such as environmental data)
+library(sf)     # Used for working with vector spatial data (shapefiles, points, polygons)
+library(lme4)   # Used for fitting mixed-effects models (you should be familiar with this one! not always needed for GLMs)
 ```
 
-## R Markdown
+## Load in data
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Load the Europe shapefile (vector data)
+europe <- st_read('/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/Europe/Europe_merged.shp')
+```
+This file represents the geographic boundaries of Europe. It is used to define the study area.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Load environmental predictor variables (raster data)
+predictors <- rast('session1_stack.tif')
+```
+This file contains spatial information on climatic variables.
 
-```{r cars}
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Load species presence points (vector data)
+presence_points <- st_read('pres_points/pres_points.shp')
+```
+This shapefile contains known locations where golden eagles have been observed, downloaded from GBIF.com. GBIF also contains absence data, though this is often fewer in number. We have generated "pseudoabsence data" from withing the golden eagle's spatial extent of occurrence. This is a common practice in Species Distribution Modelling when there is unbalanced presence-absence data.
 
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Load species absence (or pseudo-absence) points (vector data)
+absence_points <- st_read('pseudo_ab_points/pseudo_abs_points.shp')
+```
+This shapefile contains 
 
+```{r, echo=TRUE, results="hide", message=FALSE}
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+## 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+texty
+
+```{r,}
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
