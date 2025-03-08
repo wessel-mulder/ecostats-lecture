@@ -28,7 +28,7 @@ plot(test)
 # SESSION 2 ---------------------------------------------------------------
 environment <- list()
 
-environment[['current']] <- list(
+environment[['2015']] <- list(
   # landuse
   landuse_path = 'data/current/multiple-states_input4MIPs_landState_ScenarioMIP_UofMD-IMAGE-ssp119-2-1-f_gn_2015-2100.nc',
   year = 2015,
@@ -61,20 +61,23 @@ environment[['2100_ssp5']] <- list(
   stack_name = 'session2_2100_ssp5_stack.tif'
 )
 
-### CURRENT (2015)
-# elevation
+times <- c('2015','2100_ssp1','2100_ssp5')
+for(i in times){
+  print(i)
+  data <- environment[[i]]
+
 elev <- rast('data/ETOPO_2022_v1_60s_N90W180_bed.tif')
 elev <- crop(elev,europe)
-plot(elev)
+#plot(elev)
 
 # landuse 
-landuse_ssp1 <- rast('data/current/multiple-states_input4MIPs_landState_ScenarioMIP_UofMD-IMAGE-ssp119-2-1-f_gn_2015-2100.nc')
+landuse_ssp1 <- rast(data$landuse_path)
 time_info <- time(landuse_ssp1)
-index <- which(time_info == '2015')
+index <- which(time_info == data$year)
 landuse_2015 <- subset(landuse_ssp1, index)
 landuse_2015 <- crop(landuse_2015,europe)
 landuse_2015 <- landuse_2015[[1:12]]
-plot(landuse_2015)
+#plot(landuse_2015)
 dominant_landuse <- which.max(landuse_2015)
 dominant_landuse <- as.factor(dominant_landuse)
 
@@ -121,13 +124,11 @@ colors <- c("#11573d",  # 1 forest primary (green)
             "#FCE762",  # 4 cropland (yellow)
             "#D00000",  # 5 urban (red)
             "#A7C7FF")  # 6 water (blue)
-plot(landuse_processed,
-     col = colors,
-     legend = 'top')
+#plot(landuse_processed, col = colors, legend = 'top')
 
 ### TEMPERATURE 
 # List all raster files in the folder
-folder_path <- 'data/current/chelsav2/GLOBAL/climatologies/1981-2010/bio/'
+folder_path <- data$climate_path
 raster_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)
 
 # Load all raster files into a SpatRaster stack
@@ -141,44 +142,20 @@ raster_stack <- aggregate(raster_stack,fact = 30)
 elev <- project(elev,raster_stack)
 landuse_processed <- project(landuse_processed,raster_stack)
 
-plot(elev)
-plot(landuse_processed)
-plot(raster_stack[[1]])
-
 stack <- c(elev,landuse_processed,raster_stack)
-plot(stack)
 names(stack) <- c('elevation','landuse',
                   'bio1','bio10','bio11','bio12',
                   'bio13','bio14','bio15','bio16','bio17',
                   'bio18','bio19','bio2','bio3','bio4',
                   'bio5','bio6','bio7','bio8','bio9')
-writeRaster(stack, "session2_2015_stack.tif", overwrite = TRUE)
+writeRaster(stack, data$stack_name, overwrite = TRUE)
+}
 
 
+# CHECK STACKS ------------------------------------------------------------
 
-
-
-# 2100 ssp1
-index <- which(time_info == '2100')
-landuse_2100_ssp1 <- subset(landuse_ssp1, index)
-landuse_2100_ssp1 <- crop(landuse_2100_ssp1,europe)
-landuse_2100_ssp1 <- landuse_2100_ssp1[[1:12]]
-dominant_landuse <- which.max(landuse_2100_ssp1)
-plot(dominant_landuse)
-
-# s200 ssp5
-landuse_ssp5 <- rast('data/ssp585/multiple-states_input4MIPs_landState_ScenarioMIP_UofMD-MAGPIE-ssp534-2-1-f_gn_2015-2100.nc')
-time_info <- time(landuse_ssp5)
-index <- which(time_info == '2100')
-landuse_2100_ssp5 <- subset(landuse_ssp5, index)
-landuse_2100_ssp5 <- crop(landuse_2100_ssp5,europe)
-landuse_2100_ssp5 <- landuse_2100_ssp5[[1:12]]
-dominant_landuse <- which.max(landuse_2100_ssp5)
-plot(dominant_landuse)
-
-plot(landuse_2015[[1]])
-plot(landuse_2100_ssp1[[1]])
-plot(landuse_2100_ssp5[[1]])
+test<-rast('session2_2100_ssp5_stack.tif')
+plot(test)
 
 
 
