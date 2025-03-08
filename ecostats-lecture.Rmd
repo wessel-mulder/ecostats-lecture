@@ -13,14 +13,14 @@ output: html_document
 
 library(terra)  # Used for handling raster data (spatial information, such as environmental data)
 library(sf)     # Used for working with vector spatial data (shapefiles, points, polygons)
-library(lme4)   # Used for fitting mixed-effects models (you should be familiar with this one! not always needed for GLMs)
+library(lme4)   # Used for fitting mixed-effects models (you should be familiar with this one!)
 ```
 
 ## Load in data
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
 # Load the Europe shapefile (vector data)
-europe <- st_read('/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/Europe/Europe_merged.shp')
+europe <- st_read('/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/Europe/Europe_merged.shp') # Replace path to  where you saved it!
 ```
 This file represents the geographic boundaries of Europe. It is used to define the study area.
 
@@ -31,44 +31,61 @@ predictors <- rast('session1_stack.tif')
 This file contains spatial information on climatic variables.
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
-# Load species presence points (vector data)
-presence_points <- st_read('pres_points/pres_points.shp')
+occurrence <- st_read("occurrence_data/occurrence_data.shp")
+colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry")
+ 
 ```
 This shapefile contains known locations where golden eagles have been observed, downloaded from GBIF.com. GBIF also contains absence data, though this is often fewer in number. We have generated "pseudoabsence data" from withing the golden eagle's spatial extent of occurrence. This is a common practice in Species Distribution Modelling when there is unbalanced presence-absence data.
 
-```{r, echo=TRUE, results="hide", message=FALSE}
-plot(predictors[[1]])
-plot(presence_points$geometry,add=T)
-plot(absence_points$geometry,add=T,
-     col = 'red')
-```
-Explore the data... some more text and sturende vragen
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
-
-# Convert presence/absence data to a factor variable
-df$presence_absence <- as.factor(df$presence_absence)  
+plot(predictors$precipitation_annual)
 ```
-This ensures that R treats presence (1) and absence (0) as categorical rather than numerical data.
+We have plotted the first "layer" of the environmental data that we will use to model golden eagle occurrence, mean annual temperature. Change the variable indexed to "temperature_annual" look at annual precipitation across Europe.
+
+Now let's plot the occurrence records over annual temperature
+```{r, echo=TRUE, results="hide", message=FALSE}
+plot(predictors$temperature_annual)
+
+plot(occurrence$geometry[occurrence$presence_absence == 0], 
+     col = "firebrick",
+     pch = 4,
+     cex = 0.5,
+     add=T)
+plot(occurrence$geometry[occurrence$presence_absence == 1],
+     cex = 0.5,
+     add=T)
+
+```
+```{r, echo=TRUE, results="hide", message=FALSE}
+df <- extract(predictors,occurrence,bind=T)
+df$presence_absence <- as.factor(df$presence_absence)
+```
+
 ```{r, echo=TRUE, results="hide", message=FALSE}
 # Fit a binomial Generalized Linear Model (GLM)
-m1 <- glm(presence_absence ~ temperature + precipitation,  
+sdm <- glm(presence_absence ~ temperature_annual + precipitation_annual,  
           family = binomial,  # Specifies that this is a logistic regression (binomial response)
           data = df)  # Uses the dataframe 'df' as input
 ```
 Why are we fitting a binomial GLM here?
+
 ```{r, echo=TRUE, results="hide", message=FALSE}
 # Display the model summary (coefficients, significance, model fit statistics)
-summary(m1)  
+summary(sdm)  
 ```
 The output details how temperature and precipitation influence species presence. What can you tell about the effects of these climatic variables on golden eagle presence?
 
 
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
-p1 <- terra::predict(predictors,m1,type='response')
-p1 <- mask(p1,europe)
-plot(p1$lyr1)
+predicted_suitability <- terra::predict(predictors,sdm,type='response')
+predicted_suitability <- mask(predicted_suitability,europe)
+plot(predicted_suitability)
 
 ```
+Blammo! 
 
+Isn't that marvelous?
+
+If you feel so inclined, see how this map of predicted suitable habitat compares to the known distribution of golden eagles. You can find this on the IUCN red list page of golden eagles. 
