@@ -71,12 +71,18 @@ pseudo_abs <- data.frame(decimalLongitude = pseudo_abs_points[, 1],
                          decimalLatitude = pseudo_abs_points[, 2], 
                          occurrenceStatus = "ABSENT")
 
-pseudo_abs_points <- st_as_sf(pseudo_abs, 
-                              coords = c("decimalLongitude", "decimalLatitude"),
-                              crs = 4326)
 
 # Save pseudoabsences as a shapefile
 #st_write(pseudo_abs_points, "pseudo_abs_points.shp")
 
+pres_points <- occ %>% filter(occurrenceStatus == "PRESENT")
+pres_points <- pres_points[,c("decimalLongitude", "decimalLatitude", "occurrenceStatus")]
+pres_points$presence_absence <- 1
 
+pseudo_abs$presence_absence <- 0
+df <- rbind(pseudo_abs,pres_points)
+df$presence_absence <- as.factor(df$presence_absence)
 
+df <- st_as_sf(df,coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+st_write(df, "occurrence_data.shp")

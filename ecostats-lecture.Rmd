@@ -37,21 +37,38 @@ presence_points <- st_read('pres_points/pres_points.shp')
 This shapefile contains known locations where golden eagles have been observed, downloaded from GBIF.com. GBIF also contains absence data, though this is often fewer in number. We have generated "pseudoabsence data" from withing the golden eagle's spatial extent of occurrence. This is a common practice in Species Distribution Modelling when there is unbalanced presence-absence data.
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
-# Load species absence (or pseudo-absence) points (vector data)
-absence_points <- st_read('pseudo_ab_points/pseudo_abs_points.shp')
+plot(predictors[[1]])
+plot(presence_points$geometry,add=T)
+plot(absence_points$geometry,add=T,
+     col = 'red')
 ```
-This shapefile contains 
+Explore the data... some more text and sturende vragen
 
 ```{r, echo=TRUE, results="hide", message=FALSE}
+
+# Convert presence/absence data to a factor variable
+df$presence_absence <- as.factor(df$presence_absence)  
+```
+This ensures that R treats presence (1) and absence (0) as categorical rather than numerical data.
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Fit a binomial Generalized Linear Model (GLM)
+m1 <- glm(presence_absence ~ temperature + precipitation,  
+          family = binomial,  # Specifies that this is a logistic regression (binomial response)
+          data = df)  # Uses the dataframe 'df' as input
+```
+Why are we fitting a binomial GLM here?
+```{r, echo=TRUE, results="hide", message=FALSE}
+# Display the model summary (coefficients, significance, model fit statistics)
+summary(m1)  
+```
+The output details how temperature and precipitation influence species presence. What can you tell about the effects of these climatic variables on golden eagle presence?
+
+
+
+```{r, echo=TRUE, results="hide", message=FALSE}
+p1 <- terra::predict(predictors,m1,type='response')
+p1 <- mask(p1,europe)
+plot(p1$lyr1)
+
 ```
 
-
-## 
-
-texty
-
-```{r,}
-
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
