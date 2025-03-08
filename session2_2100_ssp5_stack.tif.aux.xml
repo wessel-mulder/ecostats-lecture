@@ -264,60 +264,21 @@
     </CategoryNames>
   </PAMRasterBand>
   <PAMRasterBand band="3">
-    <Description>bio1</Description>
+    <Description>temperature_annual</Description>
   </PAMRasterBand>
   <PAMRasterBand band="4">
-    <Description>bio10</Description>
+    <Description>temperature_warmest_month</Description>
   </PAMRasterBand>
   <PAMRasterBand band="5">
-    <Description>bio11</Description>
+    <Description>temperature_coldest_month</Description>
   </PAMRasterBand>
   <PAMRasterBand band="6">
-    <Description>bio12</Description>
+    <Description>precipitation_annual</Description>
   </PAMRasterBand>
   <PAMRasterBand band="7">
-    <Description>bio13</Description>
+    <Description>precipitation_wettest_month</Description>
   </PAMRasterBand>
   <PAMRasterBand band="8">
-    <Description>bio14</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="9">
-    <Description>bio15</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="10">
-    <Description>bio16</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="11">
-    <Description>bio17</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="12">
-    <Description>bio18</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="13">
-    <Description>bio19</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="14">
-    <Description>bio2</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="15">
-    <Description>bio3</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="16">
-    <Description>bio4</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="17">
-    <Description>bio5</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="18">
-    <Description>bio6</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="19">
-    <Description>bio7</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="20">
-    <Description>bio8</Description>
-  </PAMRasterBand>
-  <PAMRasterBand band="21">
-    <Description>bio9</Description>
+    <Description>precipitation_driest_month</Description>
   </PAMRasterBand>
 </PAMDataset>
