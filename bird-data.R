@@ -168,7 +168,7 @@ pa
 
 # Convert to sf point object
 points <- st_as_sf(pa, coords = c("lon", "lat"), crs = 4326)  # CRS 4326 = WGS84 (lon/lat)
-
+write
 
 
 
