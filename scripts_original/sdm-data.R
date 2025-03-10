@@ -349,7 +349,6 @@ europe_vect <- vect(europe_simple)
 plot(europe_vect)
 
 st_write(europe_simple,'data/europe_simple/europe.shp')
-<<<<<<< HEAD
 
 
 # CROP PRESENCE / ABSENCE POINTS ------------------------------------------
@@ -367,5 +366,4 @@ st_write(occ_c,
 
 test <- st_read('occurrence_data/occurrence_data.shp')
 plot(test)
-=======
->>>>>>> 4f6edf70ff2346379c8ecc100dbf4b19c7b5eee3
+
