@@ -336,3 +336,15 @@ plot(r_classified, main = "Reclassified Land Use")
 test <-rast('session2_2015_stack_subset.tif')
 plot(test$landuse)
 
+
+
+
+# SIMPLIFY EUROPE ---------------------------------------------------------
+library('sf')
+library('terra')
+europe <- st_read('data/Europe/Europe_merged.shp')
+europe_simple <- st_simplify(europe,dTolerance = 1000)
+europe_vect <- vect(europe_simple)
+plot(europe_vect)
+
+st_write(europe_simple,'data/europe_simple/europe.shp')
