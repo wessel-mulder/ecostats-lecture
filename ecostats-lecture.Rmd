@@ -1,91 +1,122 @@
 ---
-title: "Building a Species Distibution Model"
+title: "Building a Species Distribution Model"
 author: "Wessel Mulder & Nathan Michielsen"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 ## Install and unpack necessary packages
-
-```{r, echo=TRUE, results="hide", message=FALSE}
+  
+```{r echo=TRUE, message=TRUE}
 # install.packages("terra")
 # install.packages("sf")
-# install.packages("lme4")
 
 library(terra)  # Used for handling raster data (spatial information, such as environmental data)
 library(sf)     # Used for working with vector spatial data (shapefiles, points, polygons)
-library(lme4)   # Used for fitting mixed-effects models (you should be familiar with this one!)
 ```
 
 ## Load in data
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+```{r, echo=TRUE, message=TRUE}
 # Load the Europe shapefile (vector data)
-europe <- st_read('/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/Europe/Europe_merged.shp') # Replace path to  where you saved it!
-```
-This file represents the geographic boundaries of Europe. It is used to define the study area.
+europe <- vect("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/europe_simple/europe.shp") # Replace path to  where you saved it!
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+plot(europe)
+```
+
+
+This file contains the geographic boundaries of Europe. We use it to define the study area and "mask" the occurrence records later on. Masking is a type of spatial filtering which ensures any data falling outside of the mask range will not be considered. 
+
+Let's load a "raster stack" containing our environmental predictors.
+
+```{r, echo=TRUE, message=TRUE}
 # Load environmental predictor variables (raster data)
-predictors <- rast('session1_stack.tif')
+predictors <- rast("session1_stack.tif")
 ```
-This file contains spatial information on climatic variables.
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+Inspect this object. How many "layers" does it contain? What are their names?
+Do you understand the rest of the information that's in here?
+
+For more information on "SpatRaster" (spatial raster) objects, try what you can find with the help function.
+
+```{r, echo=TRUE, message=TRUE}
+predictors
+```
+
+Now let's look at it on a map.
+
+```{r, echo=TRUE, message=TRUE}
+plot(predictors$precipitation_annual)
+plot(europe, add=T) # Specifying add = T to add it to previously called graphic
+```
+
+We have plotted the first "layer" of the environmental data that we will use to model golden eagle occurrence, mean annual precipitation. Change the indexed variable to "temperature_annual" to look at mean annual temperature across Europe. What happens if you don't index anything?
+
+```{r, echo=TRUE, message=TRUE}
 occurrence <- st_read("occurrence_data/occurrence_data.shp")
 colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry")
  
 ```
-This shapefile contains known locations where golden eagles have been observed, downloaded from GBIF.com. GBIF also contains absence data, though this is often fewer in number. We have generated "pseudoabsence data" from withing the golden eagle's spatial extent of occurrence. This is a common practice in Species Distribution Modelling when there is unbalanced presence-absence data.
+This shapefile contains locations where golden eagles have been observed, downloaded from GBIF.com (Global Biodiversity Information Facility). GBIF also contains absence data, though this is often fewer in number. We have pre-generated "pseudoabsence" data from within the golden eagle's spatial extent of occurrence, which is included in the occurrence_data shapefile. Using pseudoabsences is a common practice in species distribution modelling when there are more presence records than absence records.
 
 
-```{r, echo=TRUE, results="hide", message=FALSE}
-plot(predictors$precipitation_annual)
-```
-We have plotted the first "layer" of the environmental data that we will use to model golden eagle occurrence, mean annual temperature. Change the variable indexed to "temperature_annual" look at annual precipitation across Europe.
-
-Now let's plot the occurrence records over annual temperature
-```{r, echo=TRUE, results="hide", message=FALSE}
+Now let's plot these occurrence records over annual temperature
+```{r, echo=TRUE, message=TRUE}
 plot(predictors$temperature_annual)
-
 plot(occurrence$geometry[occurrence$presence_absence == 0], 
-     col = "firebrick",
-     pch = 4,
-     cex = 0.5,
+     col = "firebrick", # Color of symbols
+     pch = 4, # Shape of symbols
+     cex = 0.5, # Size of symbols
      add=T)
 plot(occurrence$geometry[occurrence$presence_absence == 1],
+     pch = 1,
      cex = 0.5,
      add=T)
+plot(europe, add=T)
 
 ```
-```{r, echo=TRUE, results="hide", message=FALSE}
-df <- extract(predictors,occurrence,bind=T)
+
+## Extract data
+
+Let's produce a dataframe that contains both the occurrence records and the environmental data, while retaining the spatial information of both.
+
+terra has a neat function for this, called extract()
+```{r, echo=TRUE, message=TRUE}
+df <- extract(predictors, occurrence, bind=TRUE) # We specify bind=TRUE to ensure all information is retained
 df$presence_absence <- as.factor(df$presence_absence)
 ```
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+We have everything we need to produce our SDM now, so let's do it.
+
+
+## Produce the SDM
+
+```{r, echo=TRUE, message=TRUE}
 # Fit a binomial Generalized Linear Model (GLM)
 sdm <- glm(presence_absence ~ temperature_annual + precipitation_annual,  
           family = binomial,  # Specifies that this is a logistic regression (binomial response)
-          data = df)  # Uses the dataframe 'df' as input
+          data = df)
 ```
 Why are we fitting a binomial GLM here?
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+```{r, echo=TRUE, message=TRUE}
 # Display the model summary (coefficients, significance, model fit statistics)
-summary(sdm)  
+summary(sdm)
 ```
-The output details how temperature and precipitation influence species presence. What can you tell about the effects of these climatic variables on golden eagle presence?
+This kind of output should look familiar. What can we tell about the golden eagle's climatic niche? 
 
+## Predict the probability of occurrence
 
+We can predict the probability of occurrence of golden eagle's using the relationship we found between climate and occurrence, and our climatic data. 
 
-```{r, echo=TRUE, results="hide", message=FALSE}
+For this we use the predict() function in terra.
+```{r, echo=TRUE, message=TRUE}
 predicted_suitability <- terra::predict(predictors,sdm,type='response')
-predicted_suitability <- mask(predicted_suitability,europe)
+predicted_suitability <- mask(predicted_suitability,europe) # Mask predictions to European geography
 plot(predicted_suitability)
+plot(europe, add=T)
 
 ```
-Blammo! 
 
 Isn't that marvelous?
-
-If you feel so inclined, see how this map of predicted suitable habitat compares to the known distribution of golden eagles. You can find this on the IUCN red list page of golden eagles. 
+  
+So far so good. If you feel so inclined, see how this map of predicted suitable habitat compares to the known distribution of golden eagles. You can find this on the IUCN red list page for golden eagles. 
