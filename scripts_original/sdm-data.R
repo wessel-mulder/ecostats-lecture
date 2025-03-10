@@ -23,6 +23,7 @@ names(stack) <- c('temperature_annual','precipitation_annual')
 writeRaster(stack, "session1_stack.tif", overwrite = TRUE)
 
 test <- rast('session1_stack.tif')
+
 plot(test)
 
 # SESSION 2 - ALL BIO VARIABLES  ---------------------------------------------------------------
@@ -336,3 +337,32 @@ plot(r_classified, main = "Reclassified Land Use")
 test <-rast('session2_2015_stack_subset.tif')
 plot(test$landuse)
 
+
+
+
+# SIMPLIFY EUROPE ---------------------------------------------------------
+library('sf')
+library('terra')
+europe <- st_read('data/Europe/Europe_merged.shp')
+europe_simple <- st_simplify(europe,dTolerance = 1000)
+europe_vect <- vect(europe_simple)
+plot(europe_vect)
+
+st_write(europe_simple,'data/europe_simple/europe.shp')
+
+
+# CROP PRESENCE / ABSENCE POINTS ------------------------------------------
+library('dplyr')
+occ <- st_read('occurrence_data/occurrence_data.shp')
+plot(occ)
+occ_c <- st_intersection(occ,europe_simple)
+occ_c <- occ_c %>%
+  select(occrrnS,prsnc_b,geometry)
+
+plot(occ_c)
+st_write(occ_c,
+         'occurrence_data/occurrence_data.shp',
+         append = F)
+
+test <- st_read('occurrence_data/occurrence_data.shp')
+plot(test)
