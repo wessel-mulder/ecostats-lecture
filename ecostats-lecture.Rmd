@@ -64,7 +64,7 @@ occurrence <- st_read("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/e
 colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry") # Rename columns for convenience
  
 ```
-This shapefile contains locations where golden eagles have been observed, downloaded from GBIF.com (Global Biodiversity Information Facility). 
+This shapefile contains the locations where golden eagles have been observed to be present and absent, downloaded from GBIF.com (Global Biodiversity Information Facility). 
 
 GBIF also contains absence data, though this is often fewer in number. We have pre-generated "pseudoabsence" data from within the golden eagle's spatial extent of occurrence, which is included in the occurrence_data shapefile. Using pseudoabsences is a common practice in species distribution modelling when there are more presence records than absence records.
 
@@ -73,20 +73,20 @@ If we look at the output we get after loading in the occurrence data, it specifi
 Now let's plot these occurrence records over annual temperature.
 ```{r, echo=TRUE, message=TRUE}
 plot(predictors$temperature_annual)
-plot(occurrence$geometry[occurrence$presence_absence == 0], 
+plot(occurrence$geometry[occurrence$presence_absence == 0], # Absences
      col = "firebrick", # Color of symbols
      pch = 4, # Shape of symbols
      cex = 0.5, # Size of symbols
      add=T)
-plot(occurrence$geometry[occurrence$presence_absence == 1],
-     pch = 1,
+plot(occurrence$geometry[occurrence$presence_absence == 1], # Presences
+     pch = 1, 
      cex = 0.5,
      add=T)
 plot(europe, add=T)
 
 ```
 
-## Extract an combine data
+## Extract and combine data
 
 Let's produce a data frame that contains both the occurrence records and the environmental data, while retaining the spatial information of both.
 
