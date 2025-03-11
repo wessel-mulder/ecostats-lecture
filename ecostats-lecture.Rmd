@@ -16,9 +16,13 @@ library(sf)     # Used for working with vector spatial data (shapefiles, points,
 
 ## Load in data
 
+As always, we're going to start by loading in and exploring the data. Remember to change the names of the paths to the different files we load to where you have saved those files locally.
+
+### Spatial range
+
 ```{r, echo=TRUE, message=TRUE}
 # Load the Europe shapefile (vector data)
-europe <- vect("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/europe_simple/europe.shp") # Replace path to  where you saved it!
+europe <- vect("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/europe_simple/europe.shp") # Replace path to  where you saved it!
 
 plot(europe)
 ```
@@ -26,40 +30,47 @@ plot(europe)
 
 This file contains the geographic boundaries of Europe. We use it to define the study area and "mask" the occurrence records later on. Masking is a type of spatial filtering which ensures any data falling outside of the mask range will not be considered. 
 
-Let's load a "raster stack" containing our environmental predictors.
+### Environmental data
+
+Next, let's load a "raster stack" containing our environmental predictors.
 
 ```{r, echo=TRUE, message=TRUE}
 # Load environmental predictor variables (raster data)
-predictors <- rast("session1_stack.tif")
+predictors <- rast("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/tutorial1_stack.tif")
 ```
 
 Inspect this object. How many "layers" does it contain? What are their names?
 Do you understand the rest of the information that's in here?
 
-For more information on "SpatRaster" (spatial raster) objects, try what you can find with the help function.
-
 ```{r, echo=TRUE, message=TRUE}
 predictors
 ```
 
-Now let's look at it on a map.
+For more information on "SpatRaster" (spatial raster) objects, try what you can find with the help function.
+
+Now let's look at some of this spatial data.
 
 ```{r, echo=TRUE, message=TRUE}
 plot(predictors$precipitation_annual)
 plot(europe, add=T) # Specifying add = T to add it to previously called graphic
 ```
 
-We have plotted the first "layer" of the environmental data that we will use to model golden eagle occurrence, mean annual precipitation. Change the indexed variable to "temperature_annual" to look at mean annual temperature across Europe. What happens if you don't index anything?
+We have plotted the first "layer" of the environmental data that we will use to model golden eagle occurrence: mean annual precipitation. Change the indexed variable to "temperature_annual" to look at mean annual temperature across Europe. What happens if you don't index anything?
+
+### Occurrence records
 
 ```{r, echo=TRUE, message=TRUE}
-occurrence <- st_read("occurrence_data/occurrence_data.shp")
-colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry")
+occurrence <- st_read("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/occurrence_data/occurrence_data.shp")
+colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry") # Rename columns for convenience
  
 ```
-This shapefile contains locations where golden eagles have been observed, downloaded from GBIF.com (Global Biodiversity Information Facility). GBIF also contains absence data, though this is often fewer in number. We have pre-generated "pseudoabsence" data from within the golden eagle's spatial extent of occurrence, which is included in the occurrence_data shapefile. Using pseudoabsences is a common practice in species distribution modelling when there are more presence records than absence records.
+This shapefile contains locations where golden eagles have been observed, downloaded from GBIF.com (Global Biodiversity Information Facility). 
 
+GBIF also contains absence data, though this is often fewer in number. We have pre-generated "pseudoabsence" data from within the golden eagle's spatial extent of occurrence, which is included in the occurrence_data shapefile. Using pseudoabsences is a common practice in species distribution modelling when there are more presence records than absence records.
 
-Now let's plot these occurrence records over annual temperature
+If we look at the output we get after loading in the occurrence data, it specifies that the file contains 4232 features of geometry type "POINT". This means the shapefile contains 4232 georeferenced observations, which in this case are presences or absences of golden eagles across Europe. It also specifies the dimension (XY), the spatial extent ("bounding box") in coordinates and the "geodetic CRS" which is the coordinate reference system those coordinates are in. This is not important for now, but just know it exists.
+
+Now let's plot these occurrence records over annual temperature.
 ```{r, echo=TRUE, message=TRUE}
 plot(predictors$temperature_annual)
 plot(occurrence$geometry[occurrence$presence_absence == 0], 
@@ -75,11 +86,11 @@ plot(europe, add=T)
 
 ```
 
-## Extract data
+## Extract an combine data
 
-Let's produce a dataframe that contains both the occurrence records and the environmental data, while retaining the spatial information of both.
+Let's produce a data frame that contains both the occurrence records and the environmental data, while retaining the spatial information of both.
 
-terra has a neat function for this, called extract()
+terra has a neat function for this called extract()
 ```{r, echo=TRUE, message=TRUE}
 df <- extract(predictors, occurrence, bind=TRUE) # We specify bind=TRUE to ensure all information is retained
 df$presence_absence <- as.factor(df$presence_absence)
@@ -97,6 +108,8 @@ sdm <- glm(presence_absence ~ temperature_annual + precipitation_annual,
           data = df)
 ```
 Why are we fitting a binomial GLM here?
+
+Let's investigate the model summary.
 
 ```{r, echo=TRUE, message=TRUE}
 # Display the model summary (coefficients, significance, model fit statistics)
