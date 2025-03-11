@@ -22,7 +22,7 @@ As always, we're going to start by loading in and exploring the data. Remember t
 
 ```{r, echo=TRUE, message=TRUE}
 # Load the Europe shapefile (vector data)
-europe <- vect("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/europe_simple/europe.shp") # Replace path to  where you saved it!
+europe <- vect("tutorial1_data/europe_simple/europe.shp") # Replace path to  where you saved it!
 
 plot(europe)
 ```
@@ -36,7 +36,7 @@ Next, let's load a "raster stack" containing our environmental predictors.
 
 ```{r, echo=TRUE, message=TRUE}
 # Load environmental predictor variables (raster data)
-predictors <- rast("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/tutorial1_stack.tif")
+predictors <- rast("tutorial1_data/tutorial1_stack.tif")
 ```
 
 Inspect this object. How many "layers" does it contain? What are their names?
@@ -60,7 +60,7 @@ We have plotted the first "layer" of the environmental data that we will use to 
 ### Occurrence records
 
 ```{r, echo=TRUE, message=TRUE}
-occurrence <- st_read("/Users/fcd538/Library/CloudStorage/Box-Box/PhD/Teaching/ecostats-lecture/tutorial1_data/occurrence_data/occurrence_data.shp")
+occurrence <- st_read("tutorial1_data/occurrence_data/occurrence_data.shp")
 colnames(occurrence) <- c("occurrenceStatus","presence_absence","geometry") # Rename columns for convenience
  
 ```
